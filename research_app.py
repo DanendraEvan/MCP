@@ -6,7 +6,7 @@ import os
 class ResearchApp:
     def __init__(self):
         # Inisialisasi Gemini
-        genai.configure(api_key=os.getenv('AIzaSyA3v617hxW0HbA-6OQOM1tC79JBl82RmdQ'))
+        genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
         self.gemini_model = genai.GenerativeModel('gemini-1.0-pro')
         
     def search_papers(self, topic: str, max_results: int = 5) -> Dict:
