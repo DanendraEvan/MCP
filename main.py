@@ -1,5 +1,5 @@
 import streamlit as st
-from mcp_client import MCPClient
+from MCPclient import MCPClient
 
 class ResearchAppClient:
     def __init__(self):
