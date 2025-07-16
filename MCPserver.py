@@ -1,64 +1,67 @@
+from flask import Flask, request, jsonify
+from research_app import ResearchApp
+import threading
 import socket
 import json
-from threading import Thread
-from research_app import ResearchApp  # Sekarang mengimpor dari file yang benar
 
-class MCPServer:
-    def __init__(self, host='localhost', port=5000):
-        self.host = host
-        self.port = port
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.research_app = ResearchApp()
+app = Flask(__name__)
+research_app = ResearchApp()
+
+@app.route('/api', methods=['POST'])
+def handle_api_request():
+    """Handle all API requests through HTTP"""
+    try:
+        data = request.get_json()
+        action = data.get('action')
+        params = data.get('params', {})
         
-    def start(self):
-        self.server_socket.bind((self.host, self.port))
-        self.server_socket.listen(5)
-        print(f"MCP Server listening on {self.host}:{self.port}")
+        if action == 'ping':
+            return jsonify({"status": "alive"})
+        elif action == 'search_papers':
+            result = research_app.search_papers(**params)
+        elif action == 'get_paper_content':
+            result = research_app.get_paper_content(**params)
+        elif action == 'extract_info':
+            result = research_app.extract_info(**params)
+        elif action == 'research_assistant':
+            result = research_app.research_assistant(**params)
+        else:
+            return jsonify({"error": "Invalid action specified"}), 400
+            
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Optional: Keep socket server running in background
+def run_socket_server():
+    """Run the original socket server in a separate thread"""
+    host = 'localhost'
+    port = 5000
+    
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((host, port))
+        s.listen()
+        print(f"Socket server listening on {host}:{port}")
         
         while True:
-            client_socket, addr = self.server_socket.accept()
-            print(f"Connection from {addr}")
-            Thread(target=self.handle_client, args=(client_socket,)).start()
-    
-    def handle_client(self, client_socket):
-        try:
-            while True:
-                data = client_socket.recv(1024).decode('utf-8')
-                if not data:
-                    break
-                    
-                try:
+            conn, addr = s.accept()
+            try:
+                data = conn.recv(1024).decode('utf-8')
+                if data:
                     request = json.loads(data)
-                    response = self.process_request(request)
-                    client_socket.send(json.dumps(response).encode('utf-8'))
-                except json.JSONDecodeError:
-                    response = {"error": "Invalid JSON format"}
-                    client_socket.send(json.dumps(response).encode('utf-8'))
-                    
-        except Exception as e:
-            print(f"Error handling client: {e}")
-        finally:
-            client_socket.close()
-    
-    def process_request(self, request):
-        action = request.get('action')
-        params = request.get('params', {})
-        
-        try:
-            if action == 'search_papers':
-                return self.research_app.search_papers(**params)
-            elif action == 'get_paper_content':
-                return self.research_app.get_paper_content(**params)
-            elif action == 'extract_info':
-                return self.research_app.extract_info(**params)
-            elif action == 'research_assistant':
-                return self.research_app.research_assistant(**params)
-            else:
-                return {"error": "Invalid action specified"}
-        except Exception as e:
-            return {"error": str(e)}
+                    response = research_app.process_request(request)
+                    conn.send(json.dumps(response).encode('utf-8'))
+            except Exception as e:
+                print(f"Socket error: {e}")
+            finally:
+                conn.close()
 
-if __name__ == "__main__":
-    server = MCPServer()
-    server.start()
+# Start socket server in background if needed
+if __name__ == '__main__':
+    # Only start socket server when running directly
+    socket_thread = threading.Thread(target=run_socket_server, daemon=True)
+    socket_thread.start()
+    
+    # Start Flask app
+    app.run(host='0.0.0.0', port=8080)
