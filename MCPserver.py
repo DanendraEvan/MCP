@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 from research_app import ResearchApp
+from dotenv import load_dotenv
+load_dotenv()  # Tambahkan di bagian atas file
 
 app = Flask(__name__)
 research_app = ResearchApp()
