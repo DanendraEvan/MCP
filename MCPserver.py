@@ -1,7 +1,7 @@
 import socket
 import json
 from threading import Thread
-from research_app import ResearchApp  # Assuming your original code is saved as research_app.py
+from main import ResearchApp  # Assuming your original code is saved as research_app.py
 
 class MCPServer:
     def __init__(self, host='localhost', port=5000):
