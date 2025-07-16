@@ -2,7 +2,7 @@ import socket
 import json
 
 class MCPClient:
-    def __init__(self, host='localhost', port=5000):
+    def __init__(self, host='web-production-e2a95.up.railway.app', port=5000):
         self.host = host
         self.port = port
         
