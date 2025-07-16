@@ -1,5 +1,6 @@
 flask
-requests
-streamlit
-python-dotenv
 gunicorn
+google-generativeai
+arxiv
+feedparser
+python-dotenv
