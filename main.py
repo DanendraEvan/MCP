@@ -3,7 +3,9 @@ from MCPclient import MCPClient
 
 class ResearchAppClient:
     def __init__(self):
-        self.client = MCPClient()
+        # Gunakan SERVER_URL dari environment variable
+        server_url = os.getenv('SERVER_URL', 'http://localhost:5000')
+        self.client = MCPClient(host=server_url)
         self._setup_ui()
         
     def _display_paper_info(self, paper_info: dict):
