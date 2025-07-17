@@ -3,7 +3,7 @@ import os
 
 class MCPClient:
     def __init__(self, host=None, port=None):
-        self.base_url = host or os.getenv('SERVER_URL', ' https://mcp-production-7472.up.railway.app/api')
+        self.base_url = host or os.getenv('SERVER_URL', 'http://localhost:8080')
         if port:
             self.base_url = f"{self.base_url}:{port}"
             
